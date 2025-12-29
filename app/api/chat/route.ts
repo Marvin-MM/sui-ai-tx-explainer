@@ -14,7 +14,8 @@ export async function POST(req: Request) {
     const userId = session?.userId;
 
     // Check usage limits
-    const { allowed, remaining } = await checkUsageLimit(userId, guestId);
+    const isDigest = !!txDigest;
+    const { allowed, remaining } = await checkUsageLimit(userId, guestId, isDigest);
     if (!allowed) {
       return new Response(
         JSON.stringify({ error: 'Usage limit reached', requiresAuth: !userId }),
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
 
     // Increment usage
     if (userId) {
-      await incrementUsage(userId);
+      await incrementUsage(userId, isDigest);
     }
 
     // Stream response

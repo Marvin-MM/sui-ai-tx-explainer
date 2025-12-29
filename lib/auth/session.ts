@@ -98,20 +98,39 @@ export async function findOrCreateUser(
   return user;
 }
 
-export async function checkUsageLimit(userId?: string, guestId?: string): Promise<{ allowed: boolean; remaining: number }> {
-  const GUEST_LIMIT = 2;
-  const FREE_LIMIT = 20;
-  const PRO_LIMIT = 1000;
+export async function checkUsageLimit(
+  userId?: string,
+  guestId?: string,
+  isDigest: boolean = false
+): Promise<{ allowed: boolean; remaining: number }> {
+  const GUEST_DIGEST_LIMIT = 15;
+  const GUEST_FOLLOWUP_LIMIT = 5;
+  const FREE_DIGEST_LIMIT = 35;
+  const PRO_DIGEST_LIMIT = 1000; // Effectively unlimited
 
   if (!userId && guestId) {
     const guestChats = await prisma.chat.count({
       where: { guestId },
     });
-    const guestMessages = await prisma.message.count({
-      where: { chat: { guestId } },
-    });
-    const used = guestMessages;
-    return { allowed: used < GUEST_LIMIT, remaining: Math.max(0, GUEST_LIMIT - used) };
+
+    if (isDigest) {
+      return {
+        allowed: guestChats < GUEST_DIGEST_LIMIT,
+        remaining: Math.max(0, GUEST_DIGEST_LIMIT - guestChats)
+      };
+    } else {
+      const guestMessages = await prisma.message.count({
+        where: { chat: { guestId }, role: 'user' },
+      });
+      // Assuming 1 digest message per chat, rest are follow-ups
+      // followUps = TotalMessages - ChatCount
+      const followUps = Math.max(0, guestMessages - guestChats);
+
+      return {
+        allowed: followUps < GUEST_FOLLOWUP_LIMIT,
+        remaining: Math.max(0, GUEST_FOLLOWUP_LIMIT - followUps)
+      };
+    }
   }
 
   if (userId) {
@@ -126,20 +145,36 @@ export async function checkUsageLimit(userId?: string, guestId?: string): Promis
         where: { id: userId },
         data: { dailyUsage: 0, lastUsageDate: new Date() },
       });
-      const limit = user.plan === 'PRO' ? PRO_LIMIT : FREE_LIMIT;
+      const limit = user.plan === 'PRO' ? PRO_DIGEST_LIMIT : FREE_DIGEST_LIMIT;
       return { allowed: true, remaining: limit };
     }
 
-    const limit = user.plan === 'PRO' ? PRO_LIMIT : FREE_LIMIT;
-    return { allowed: user.dailyUsage < limit, remaining: Math.max(0, limit - user.dailyUsage) };
+    if (user.plan === 'PRO') {
+      return { allowed: true, remaining: PRO_DIGEST_LIMIT };
+    } else {
+      // Free Plan
+      if (isDigest) {
+        const limit = FREE_DIGEST_LIMIT;
+        return {
+          allowed: user.dailyUsage < limit,
+          remaining: Math.max(0, limit - user.dailyUsage)
+        };
+      } else {
+        // Unlimited follow-ups for logged in users
+        return { allowed: true, remaining: PRO_DIGEST_LIMIT };
+      }
+    }
   }
 
   return { allowed: false, remaining: 0 };
 }
 
-export async function incrementUsage(userId: string) {
-  await prisma.user.update({
-    where: { id: userId },
-    data: { dailyUsage: { increment: 1 } },
-  });
+export async function incrementUsage(userId: string, isDigest: boolean = false) {
+  // Only increment dailyUsage for digests to track against the limit
+  if (isDigest) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { dailyUsage: { increment: 1 } },
+    });
+  }
 }

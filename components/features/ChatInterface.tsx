@@ -233,18 +233,18 @@ const MessageActions = ({
 
 export function ChatInterface() {
   const { user, setShowAuthModal } = useAuthStore();
-  const { 
-    currentChatId, 
-    setCurrentChat, 
-    setStreaming, 
-    audioCache, 
-    addAudioToCache, 
+  const {
+    currentChatId,
+    setCurrentChat,
+    setStreaming,
+    audioCache,
+    addAudioToCache,
     clearMessages
   } = useChatStore();
-  
+
   const [txDigest, setTxDigest] = useState("");
   const [inputMode, setInputMode] = useState<"digest" | "chat">("digest");
-  
+
   // Audio State
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
@@ -295,16 +295,16 @@ export function ChatInterface() {
     audioRef.current = new Audio();
     audioRef.current.onended = () => setPlayingMessageId(null);
     audioRef.current.onerror = () => {
-        setPlayingMessageId(null);
-        setLoadingAudioId(null);
-        alert("Failed to play audio.");
+      setPlayingMessageId(null);
+      setLoadingAudioId(null);
+      alert("Failed to play audio.");
     };
-    
+
     return () => {
-        if(audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current = null;
-        }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, []);
 
@@ -320,9 +320,9 @@ export function ChatInterface() {
       setInputMode("digest");
       setTxDigest("");
       // Audio cleanup happens in store via clearChat(), but we stop playback here
-      if(audioRef.current) {
-          audioRef.current.pause();
-          setPlayingMessageId(null);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setPlayingMessageId(null);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -400,25 +400,25 @@ export function ChatInterface() {
     }
 
     // 3. Check Limits (LocalStorage)
-    // Limits: Guest (1), Free (5), Pro (30)
+    // Limits: Guest (2), Free (5), Pro (20)
     const usageKey = `tts_usage_${new Date().toISOString().split("T")[0]}`; // Reset daily
     const currentUsage = parseInt(localStorage.getItem(usageKey) || "0");
-    
-    let limit = 1; // Guest
+
+    let limit = 2; // Guest
     if (user) {
-        if (user.plan === "PRO") limit = 30;
-        else limit = 5; // Free
+      if (user.plan === "PRO") limit = 20;
+      else limit = 5; // Free
     }
 
     if (currentUsage >= limit) {
-        setLoadingAudioId(null);
-        if (!user) {
-            setShowAuthModal(true); // Prompt guest to login
-        } else {
-             // Simple alert for now, could be a toast
-            alert(`Daily listening limit reached for your ${user.plan || "Free"} plan.`);
-        }
-        return;
+      setLoadingAudioId(null);
+      if (!user) {
+        setShowAuthModal(true); // Prompt guest to login
+      } else {
+        // Simple alert for now, could be a toast
+        alert(`Daily listening limit reached for your ${user.plan || "Free"} plan.`);
+      }
+      return;
     }
 
     // 4. Fetch Audio
@@ -434,9 +434,9 @@ export function ChatInterface() {
       // 5. Process Blob & Store
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      
+
       addAudioToCache(messageId, url);
-      
+
       // Update Usage
       localStorage.setItem(usageKey, (currentUsage + 1).toString());
 
