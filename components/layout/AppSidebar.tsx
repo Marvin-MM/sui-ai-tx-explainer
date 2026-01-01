@@ -83,7 +83,7 @@ export function AppSidebar({
       <motion.aside
         initial={false}
         animate={{ width: collapsed ? 58 : 250 }}
-        className="h-screen bg-card flex flex-col relative"
+        className="h-full bg-card flex flex-col relative"
       >
         {/* Toggle Button - Hidden on mobile */}
         <button
@@ -143,7 +143,7 @@ export function AppSidebar({
                 placeholder="Search chats..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-secondary rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full pl-10 pr-4 py-2 bg-secondary rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>

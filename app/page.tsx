@@ -40,7 +40,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="flex h-screen bg-background overflow-hidden">
+      <div className="flex h-[100dvh] bg-background overflow-hidden">
         {user ? (
           <>
             {/* Desktop Sidebar - Hidden on mobile */}
@@ -74,7 +74,7 @@ export default function Home() {
                   >
                     <AppSidebar
                       collapsed={false}
-                      onToggle={() => {}}
+                      onToggle={() => { }}
                       mobileOpen={mobileSidebarOpen}
                       onMobileClose={() => setMobileSidebarOpen(false)}
                     />

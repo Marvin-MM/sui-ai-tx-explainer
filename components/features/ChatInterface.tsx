@@ -458,9 +458,9 @@ export function ChatInterface() {
 
 
   return (
-    <div className="flex-1 flex flex-col h-screen">
+    <div className="flex-1 flex flex-col h-full">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto mt-11">
+      <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-3 md:px-4 space-y-6">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col">
@@ -639,7 +639,7 @@ export function ChatInterface() {
                     value={input}
                     onChange={handleInputChange}
                     placeholder="Ask a follow-up question..."
-                    className="w-full px-4 md:px-6 py-4 bg-secondary/50 backdrop-blur-sm rounded-full focus:outline-none focus:ring-0 focus:ring-primary/50 pr-12 md:pr-14 transition-all border border-transparent hover:border-primary/20 text-sm md:text-base"
+                    className="w-full px-4 md:px-6 py-4 bg-secondary/50 backdrop-blur-sm rounded-full focus:outline-none focus:ring-0 focus:ring-primary/50 pr-12 md:pr-14 transition-all border border-transparent hover:border-primary/20 text-base"
                     disabled={isLoading}
                     autoComplete="off"
                   />
@@ -665,7 +665,7 @@ export function ChatInterface() {
                     value={txDigest}
                     onChange={(e) => setTxDigest(e.target.value)}
                     placeholder="Paste transaction digest..."
-                    className="w-full px-4 py-4 bg-secondary/50 backdrop-blur-sm rounded-3xl text-sm focus:outline-none focus:ring-0 focus:ring-primary/50 pr-12 transition-all border border-transparent hover:border-primary/20"
+                    className="w-full px-4 py-4 bg-secondary/50 backdrop-blur-sm rounded-3xl text-base focus:outline-none focus:ring-0 focus:ring-primary/50 pr-12 transition-all border border-transparent hover:border-primary/20"
                     autoComplete="off"
                   />
                   <button
