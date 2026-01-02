@@ -30,21 +30,22 @@ export const useAuthStore = create<AuthState>()(
       showAuthModal: false,
 
       login: (user) => set({ user, showAuthModal: false }),
-      
+
       logout: () => set({ user: null }),
-      
+
       setLoading: (isLoading) => set({ isLoading }),
-      
+
       setShowAuthModal: (showAuthModal) => set({ showAuthModal }),
 
       checkSession: async () => {
         try {
-          const res = await fetch('/api/auth');
+          const res = await fetch('/api/auth', { cache: 'no-store' });
           const data = await res.json();
           if (data.user) {
             set({ user: data.user });
           } else {
             set({ user: null });
+            // Optionally clear storage if needed, but zustand persist handles this
           }
         } catch (e) {
           console.error('Session check failed:', e);

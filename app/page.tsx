@@ -20,6 +20,7 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
+    // Check session on mount and when user state changes to ensure sync with cookies
     checkSession();
 
     // Apply initial theme

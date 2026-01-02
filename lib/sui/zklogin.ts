@@ -25,13 +25,13 @@ function generateRandomBytes(length: number): string {
 export async function initZkLoginSession(): Promise<ZkLoginSession> {
   // Generate randomness for the session
   const randomness = generateRandomBytes(16);
-  
+
   // In production, get epoch from Sui client
   const maxEpoch = Math.floor(Date.now() / 1000 / 86400) + 30;
-  
+
   // Generate nonce - simplified for compatibility
   const nonce = generateRandomBytes(20);
-  
+
   return {
     nonce,
     maxEpoch,
@@ -46,8 +46,9 @@ export function getGoogleAuthUrl(nonce: string, redirectUri: string): string {
     response_type: 'id_token',
     scope: 'openid email profile',
     nonce: nonce,
+    response_mode: 'form_post',
   });
-  
+
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
@@ -58,11 +59,11 @@ export async function getSalt(jwt: string): Promise<string> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ jwt }),
     });
-    
+
     if (!response.ok) {
       return generateFallbackSalt(jwt);
     }
-    
+
     const data = await response.json();
     return data.salt;
   } catch {
@@ -74,13 +75,13 @@ async function generateFallbackSalt(jwt: string): Promise<string> {
   // Generate deterministic salt from JWT sub claim
   const decoded = decodeJwt(jwt);
   const input = `${decoded.iss}:${decoded.sub}`;
-  
+
   if (typeof crypto !== 'undefined' && crypto.subtle) {
     const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
     const hashArray = Array.from(new Uint8Array(hash));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
   }
-  
+
   // Simple hash fallback
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
@@ -91,18 +92,18 @@ async function generateFallbackSalt(jwt: string): Promise<string> {
   return Math.abs(hash).toString(16).padStart(32, '0').slice(0, 32);
 }
 
-export function decodeJwt(jwt: string): { 
-  sub: string; 
+export function decodeJwt(jwt: string): {
+  sub: string;
   iss: string;
-  email?: string; 
-  name?: string; 
+  email?: string;
+  name?: string;
   picture?: string;
 } {
   const payload = jwt.split('.')[1];
   // Handle both base64 and base64url encoding
   const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
   const decoded = JSON.parse(
-    typeof atob !== 'undefined' 
+    typeof atob !== 'undefined'
       ? atob(base64)
       : Buffer.from(base64, 'base64').toString('utf-8')
   );

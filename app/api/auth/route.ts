@@ -14,6 +14,8 @@ import {
 import { sendWelcomeEmail } from "@/lib/email/resend";
 import prisma from "@/lib/db/prisma";
 
+export const dynamic = 'force-dynamic';
+
 // POST /api/auth - Handle authentication
 export async function POST(req: NextRequest) {
   try {
